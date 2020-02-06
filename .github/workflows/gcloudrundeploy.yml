@@ -1,0 +1,31 @@
+name: Google Cloud Run Deployment
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      # Setup gcloud CLI
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '270.0.0'
+          service_account_key: ${{ secrets.GCLOUD_AUTH }}
+
+      # Build and publish the Docker image to Google Container Registry
+      - name: Build and Publish
+        env:
+          CLOUDSDK_CORE_PROJECT: gym-booker
+        run: |
+          gcloud builds submit --tag gcr.io/gym-booker/gym
+
+      # Deploy the Docker image to the GKE cluster
+      - name: Deploy
+        run: |
+          gcloud run deploy kanyai --quiet --image gcr.io/gym-booker/gym --project gym-booker --region europe-west1 --platform managed

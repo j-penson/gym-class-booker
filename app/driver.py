@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # coding=utf-8
 from selenium import webdriver
-import chromedriver_binary
+import chromedriver_binary  # noqa: F401
 import json
 import logging
 

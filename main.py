@@ -4,7 +4,7 @@ import datetime
 import logging
 import sys
 from flask import Flask
-from flask_restx import Api, Resource, fields
+from flask_restx import Api, Resource
 
 from app import driver, booker, gym_class_parser
 
