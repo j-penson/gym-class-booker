@@ -1,0 +1,5 @@
+env/
+test/
+.coverage
+.github
+.pytest_cache
