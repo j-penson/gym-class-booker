@@ -36,7 +36,7 @@ class TodoSimple(Resource):
 
     def get(self):
         setup = driver.GymDriver(headless=True)
-        setup.setup(secret_id='jp')
+        setup.setup(secret_id='jp')  # nosec
 
         draft = True
 
