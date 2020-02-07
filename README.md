@@ -25,9 +25,25 @@ Pytest unit tests:
 `python3 -m pytest`
 
 ### Build and run locally
+Local:
+```
+export GOOGLE_APPLICATION_CREDENTIALS=./secrets/gym-booker-72a4fa622a1e.json
+python main.py
+gunicorn -b 0.0.0.0:8080 main:app
+
+
+```
+
+cd
+Container:
 ```
 docker build -t gym:latest .
-docker run -it -p 8080:8080 gym:latest
+
+docker run -it \
+           -p 8080:8080 \
+           -v /Users/jamespenson/Documents/python/gym-class-booker/secrets:/secrets \
+           -e GOOGLE_APPLICATION_CREDENTIALS=/secrets/gym-booker-72a4fa622a1e.json \
+    gym:latest
 ```
 
 ### Cloud Run
@@ -43,3 +59,22 @@ gcloud run deploy gym-booker --image gcr.io/gym-booker/gym \
 ```
 
 Github secret: service account with cloud build and run access. Encore json key as base64 `base64 ./secrets/account.json`
+
+Call service as a developer
+```
+gcloud run services list --platform managed
+
+# Add auth for user
+gcloud run services add-iam-policy-binding gym-booker \
+  --member='user:jpenson24@gmail.com' \
+  --role='roles/run.invoker' \
+  --platform=managed \
+  --region=europe-west1
+
+
+# Add an alias for curl with auth
+gcurl='curl --header "Authorization: Bearer $(gcloud auth print-identity-token)"'
+
+gcurl gym-booker
+
+```

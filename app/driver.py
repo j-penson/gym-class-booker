@@ -2,8 +2,12 @@
 # coding=utf-8
 from selenium import webdriver
 import chromedriver_binary  # noqa: F401
-import json
 import logging
+from app import read_secrets
+
+
+class NoCreds(Exception):
+    """GYM_CREDS not set"""
 
 
 class GymDriver:
@@ -16,19 +20,19 @@ class GymDriver:
         self.password = None
         self.base_url = None
 
-    def setup(self):
+    def setup(self, secret_id):
         """Call setup and creds"""
-        self._get_creds()
+        self._get_creds(secret_id)
         self._get_driver()
         logging.info('got driver and credentials')
 
-    def _get_creds(self):
+    def _get_creds(self, secret_id):
         """Read secrets"""
-        with open('./secrets/credentials.json', 'r') as f:
-            secrets = json.load(f)
-        self.email = secrets['email']
-        self.password = secrets['password']
-        self.base_url = secrets['base_url']
+        creds = read_secrets.get_creds(secret_id)
+
+        self.email = creds['email']
+        self.password = creds['password']
+        self.base_url = creds['base_url']
 
     def _get_driver(self, ):
         """Setup Chrome Driver"""
