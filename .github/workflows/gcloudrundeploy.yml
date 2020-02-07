@@ -23,7 +23,7 @@ jobs:
         env:
           CLOUDSDK_CORE_PROJECT: gym-booker
         run: |
-          gcloud builds submit --tag gcr.io/gym-booker/gym
+          gcloud builds submit --tag gcr.io/gym-booker/gym --gcs-log-dir=gs://gym-booker-build-logs/logs
 
       # Deploy the Docker image to the GKE cluster
       - name: Deploy

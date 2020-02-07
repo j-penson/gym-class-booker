@@ -44,10 +44,18 @@ docker run -it \
     gym:latest
 ```
 
-### Cloud Run
-Deploy commands
+### Cloud Build and Run
+Create a service account with the roles:
+- `Cloud Build Service Account`
+- `Service Account User`
+- `Cloud Run Admin`
+- `Storage Viewer`
+
+Create a bucket to deploy the logs to (the default bucket requires project owner access...)
+
+Deploy commands:
 ```
-gcloud builds submit --tag gcr.io/gym-booker/gym
+gcloud builds submit --tag gcr.io/gym-booker/gym --gcs-log-dir=gs://gym-booker-build-logs/logs
 
 gcloud run deploy gym-booker --image gcr.io/gym-booker/gym \
                              --project gym-booker \
