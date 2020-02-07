@@ -23,34 +23,26 @@ logger.addHandler(handler)
 
 
 @api.route('/book')
-class TodoSimple(Resource):
-    """
-    You can try this example as follow:
-        $ curl http://localhost:5000/todo1 -d "data=Remember the milk" -X PUT
-        $ curl http://localhost:5000/todo1
-        {"todo1": "Remember the milk"}
-        $ curl http://localhost:5000/todo2 -d "data=Change my breakpads" -X PUT
-        $ curl http://localhost:5000/todo2
-        {"todo2": "Change my breakpads"}
-    """
-
+class GymBooker(Resource):
     def get(self):
         setup = driver.GymDriver(headless=True)
         setup.setup(secret_id='jp')  # nosec
 
-        draft = True
+        draft = False
 
         if not draft:
             nav = booker.GymBooker(setup)
             nav.login()
 
-            target_class = gym_class_parser.TargetClass(target_class_name='HOT VINYASA YOGA',
-                                                        target_class_datetime=datetime.datetime(2020, 2, 7, 19, 15))
+            target_class = gym_class_parser.TargetClass(target_class_name='HOT YIN YOGA',
+                                                        target_class_datetime=datetime.datetime(2020, 2, 8, 18, 15))
 
             nav.find_class(target_class)
             booking_message = nav.book_class()
         else:
             booking_message = 'Draft mode'
+
+        logging.info(booking_message)
 
         return booking_message
 

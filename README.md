@@ -30,8 +30,6 @@ Local:
 export GOOGLE_APPLICATION_CREDENTIALS=./secrets/gym-booker-72a4fa622a1e.json
 python main.py
 gunicorn -b 0.0.0.0:8080 main:app
-
-
 ```
 
 cd
@@ -76,5 +74,6 @@ gcloud run services add-iam-policy-binding gym-booker \
 gcurl='curl --header "Authorization: Bearer $(gcloud auth print-identity-token)"'
 
 gcurl gym-booker
-
 ```
+
+Give Cloud Run access to secrets by adding `Secret Manager Accessor` to the compute service account.

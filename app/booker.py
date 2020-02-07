@@ -45,7 +45,7 @@ class GymBooker:
             logging.error(f'{self.driver.current_url} when expecting {target_url}')
             raise LoginError
 
-        logging.info('Successfully logged in')
+        logging.info('successfully logged in')
 
     def find_class(self, target_class):
         self.target_class = target_class
@@ -64,7 +64,13 @@ class GymBooker:
 
     def book_class(self):
         """Book the selected class and return the message"""
-        book_div = self.driver.find_element_by_css_selector('div[class="fkl-modal-inner"] input[value="Book"]')
+        try:
+            book_div = self.driver.find_element_by_css_selector('div[class="fkl-modal-inner"] input[value="Book"]')
+        except Exception as e:
+            logging.warning(f'Book option not found so looking for Join Waiting List - error {e}')
+            book_div = self.driver.find_element_by_css_selector(
+                'div[class="fkl-modal-inner"] input[value = "Join Waiting List"]')
+
         website_navigation.sleep(1)
         book_div.click()
 
