@@ -81,7 +81,26 @@ gcloud run services add-iam-policy-binding gym-booker \
 # Add an alias for curl with auth
 gcurl='curl --header "Authorization: Bearer $(gcloud auth print-identity-token)"'
 
-gcurl gym-booker
+gcurl $(gcloud run services list --platform managed | cut -d" " -f7)"/book"
 ```
 
 Give Cloud Run access to secrets by adding `Secret Manager Accessor` to the compute service account.
+
+
+### Cloud Scheduler
+
+
+```
+Create a service account
+gcloud iam service-accounts create gym-booker-scheduler \
+   --display-name "DISPLAYED-SERVICE-ACCOUNT_NAME
+
+SERVICE_URL=https://gym-booker-5exxbtdepa-ew.a.run.app/book
+
+gcloud beta scheduler jobs create http test-job --schedule "30 17 * * *" \
+   --http-method=GET \
+   --uri="${SERVICE_URL}" \
+   --oidc-service-account-email=gym-scheduler@gym-booker.iam.gserviceaccount.com   \
+   --oidc-token-audience="${SERVICE_URL}"
+
+```

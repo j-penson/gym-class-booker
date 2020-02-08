@@ -34,8 +34,8 @@ class GymBooker(Resource):
             nav = booker.GymBooker(setup)
             nav.login()
 
-            target_class = gym_class_parser.TargetClass(target_class_name='HOT YIN YOGA',
-                                                        target_class_datetime=datetime.datetime(2020, 2, 8, 18, 15))
+            target_class = gym_class_parser.TargetClass(target_class_name='HOT HATHA YOGA',
+                                                        target_class_datetime=datetime.datetime(2020, 2, 10, 12, 00))
 
             nav.find_class(target_class)
             booking_message = nav.book_class()
