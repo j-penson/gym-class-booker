@@ -86,8 +86,7 @@ def get_booking_column(class_datetime: datetime.datetime) -> int:
     booking_datetime = class_datetime - datetime.timedelta(days=2)
     now_datetime = datetime.datetime.now()
 
-    if now_datetime <= booking_datetime:
-        booking_datetime = datetime.datetime.now()
+    logging.info(f'bookings: {booking_datetime}, now: {now_datetime}, class: {class_datetime}')
 
     if now_datetime >= class_datetime:
         logging.error(f'booking_datetime {booking_datetime} after current datetime, class passed')
