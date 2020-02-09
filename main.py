@@ -1,46 +1,37 @@
 #!/usr/bin/python
 # coding=utf-8
-import datetime
+from flask_restx import Resource
 import logging
-import sys
-from flask import Flask
-from flask_restx import Api, Resource
-
-from app import driver, booker, gym_class_parser
-
-app = Flask(__name__)
-api = Api(app, version='1.0', title='Gym Booker API',
-          description='An API to log on to the gym website and book classes',
-          )
-
-# Setup logging
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.INFO)
-logger.addHandler(handler)
+from app import driver, booker, gym_class_parser, api, log_setup
 
 
-@api.route('/book')
+@api.ns.route('/book')
 class GymBooker(Resource):
-    def get(self):
-        setup = driver.GymDriver(headless=True)
-        setup.setup(secret_id='jp')  # nosec
 
-        draft = False
+    @api.ns.doc('gym_class')
+    @api.ns.expect(api.gym_class)
+    @api.ns.marshal_with(api.gym_class, code=201)
+    def post(self):
 
-        if not draft:
+        headless = self.api.payload['headless']
+        user = self.api.payload['user']
+        draft = self.api.payload['draft']
+
+        setup = driver.GymDriver(headless=headless)
+        setup.setup(secret_id=user)
+
+        if draft:
+            booking_message = 'Draft mode'
+
+        else:
             nav = booker.GymBooker(setup)
             nav.login()
 
-            target_class = gym_class_parser.TargetClass(target_class_name='HOT HATHA YOGA',
-                                                        target_class_datetime=datetime.datetime(2020, 2, 10, 12, 00))
+            target_class = gym_class_parser.TargetClass(target_class_name=self.api.payload['class_name'],
+                                                        target_class_datetime=self.api.payload['class_datetime'])
 
             nav.find_class(target_class)
             booking_message = nav.book_class()
-        else:
-            booking_message = 'Draft mode'
 
         logging.info(booking_message)
 
@@ -48,4 +39,5 @@ class GymBooker(Resource):
 
 
 if __name__ == '__main__':
-    app.run()
+    log_setup.setup()
+    api.app.run()
