@@ -2,7 +2,7 @@
 # coding=utf-8
 from flask_restx import Resource
 import logging
-from app import driver, booker, gym_class_parser, api, log_setup
+from app import driver, booker, gym_class_parser, api
 
 
 @api.ns.route('/book')
@@ -12,6 +12,8 @@ class GymBooker(Resource):
     @api.ns.expect(api.gym_class)
     @api.ns.marshal_with(api.gym_class, code=201)
     def post(self):
+
+        logging.info(f'payload is {self.api.payload}')
 
         headless = self.api.payload['headless']
         user = self.api.payload['user']
@@ -41,5 +43,4 @@ class GymBooker(Resource):
 app = api.create_app()
 
 if __name__ == "__main__":
-    log_setup.setup()
     app.run()

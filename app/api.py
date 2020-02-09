@@ -2,6 +2,7 @@
 # coding=utf-8
 from flask import Flask
 from flask_restx import Api, fields
+from app import log_setup
 
 app = Flask(__name__)
 api = Api(app,
@@ -23,4 +24,5 @@ gym_class = api.model('gym_class', {
 
 def create_app():
     """Create the Flask application."""
+    log_setup.setup()
     return app
