@@ -14,9 +14,10 @@ class ClassNotFound(Exception):
 
 
 class TargetClass:
-    def __init__(self, target_class_name: str, target_class_datetime: datetime.datetime):
+    def __init__(self, target_class_name: str, target_class_datetime: str):
         self.target_class_name = target_class_name
-        self.target_class_datetime = target_class_datetime
+        self.target_class_datetime_str = target_class_datetime
+        self.target_class_datetime = datetime.datetime.strptime(target_class_datetime, '%Y-%m-%d %H:%M')
         self.target_booking_column = booker.get_booking_column(self.target_class_datetime)
         self.target_booking_start_time = self.target_class_datetime.time()
 

@@ -97,7 +97,7 @@ gcloud iam service-accounts create gym-booker-scheduler \
 
 SERVICE_URL=https://gym-booker-5exxbtdepa-ew.a.run.app/book
 
-gcloud beta scheduler jobs create http test-job --schedule "30 17 * * *" \
+gcloud beta scheduler jobs create http hatha-lunch --schedule "00 12 * * *" \
    --http-method=GET \
    --uri="${SERVICE_URL}" \
    --oidc-service-account-email=gym-scheduler@gym-booker.iam.gserviceaccount.com   \
