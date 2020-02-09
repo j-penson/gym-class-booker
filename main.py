@@ -38,6 +38,8 @@ class GymBooker(Resource):
         return booking_message
 
 
-log_setup.setup()
-app = api.app
-app.run()
+app = api.create_app()
+
+if __name__ == "__main__":
+    log_setup.setup()
+    app.run()

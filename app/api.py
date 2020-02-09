@@ -19,3 +19,8 @@ gym_class = api.model('gym_class', {
     'class_name': fields.String(required=True, description='Target gym class to book'),
     'class_datetime': fields.DateTime(required=True, description='Target gym class date and time'),
 })
+
+
+def create_app():
+    """Create the Flask application."""
+    return app
