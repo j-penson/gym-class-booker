@@ -92,10 +92,11 @@ def get_booking_column(class_datetime: datetime.datetime) -> int:
     if now_datetime >= class_datetime:
         logging.error(f'booking_datetime {booking_datetime} after current datetime, class passed')
         raise TimingError
-    elif booking_datetime >= now_datetime:
-        logging.error(f'booking_datetime {booking_datetime} after now, class too early')
-        raise TimingError
+    elif now_datetime >= booking_datetime:
+        booking_column = 1 + (class_datetime.day - now_datetime.day)
     else:
         booking_column = 3 + (booking_datetime.day - now_datetime.day)
+
+    logging.info(f'booking column is {booking_column}')
 
     return booking_column
