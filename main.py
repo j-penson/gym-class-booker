@@ -2,7 +2,7 @@
 # coding=utf-8
 from flask_restx import Resource
 import logging
-from app import driver, booker, gym_class_parser, api, log_setup
+from app import driver, booker, gym_class_parser, api
 
 
 @api.ns.route('/book')

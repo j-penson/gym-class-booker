@@ -32,7 +32,6 @@ python main.py
 gunicorn -b 0.0.0.0:8080 main:app
 ```
 
-cd
 Container:
 ```
 docker build -t gym:latest .
@@ -42,6 +41,11 @@ docker run -it \
            -v /Users/jamespenson/Documents/python/gym-class-booker/secrets:/secrets \
            -e GOOGLE_APPLICATION_CREDENTIALS=/secrets/gym-booker-72a4fa622a1e.json \
     gym:latest
+
+curl -X POST \
+     -H "Content-Type: application/json" \
+     -d @secrets/test-class.json \
+     localhost:8080/api/book
 ```
 
 ### Cloud Build and Run
@@ -81,7 +85,10 @@ gcloud run services add-iam-policy-binding gym-booker \
 # Add an alias for curl with auth
 gcurl='curl --header "Authorization: Bearer $(gcloud auth print-identity-token)"'
 
-gcurl $(gcloud run services list --platform managed | cut -d" " -f7)"/book"
+gcurl -X POST \
+      -H "Content-Type: application/json" \
+      -d @secrets/test-class.json \
+      $(gcloud run services list --platform managed | cut -d" " -f7)"/api/book"
 ```
 
 Give Cloud Run access to secrets by adding `Secret Manager Accessor` to the compute service account.
@@ -95,12 +102,13 @@ Create a service account
 gcloud iam service-accounts create gym-booker-scheduler \
    --display-name "DISPLAYED-SERVICE-ACCOUNT_NAME
 
-SERVICE_URL=https://gym-booker-5exxbtdepa-ew.a.run.app/book
+SERVICE_URL=https://gym-booker-5exxbtdepa-ew.a.run.app/api/book
 
 gcloud beta scheduler jobs create http hatha-lunch --schedule "00 12 * * *" \
-   --http-method=GET \
+   --http-method=POST \
    --uri="${SERVICE_URL}" \
    --oidc-service-account-email=gym-scheduler@gym-booker.iam.gserviceaccount.com   \
-   --oidc-token-audience="${SERVICE_URL}"
+   --oidc-token-audience="${SERVICE_URL}" \
+   --message-body-from-file="secrets/test-class.json"
 
 ```
