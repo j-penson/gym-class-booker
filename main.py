@@ -13,6 +13,8 @@ class GymBooker(Resource):
     @api.ns.marshal_with(api.gym_class, code=201)
     def post(self):
 
+        logging.info(f'payload is {self.api.payload}')
+
         headless = self.api.payload['headless']
         user = self.api.payload['user']
         draft = self.api.payload['draft']
@@ -41,5 +43,4 @@ class GymBooker(Resource):
 app = api.create_app()
 
 if __name__ == "__main__":
-    log_setup.setup()
     app.run()
