@@ -31,6 +31,8 @@ def get_gym_class(gym_classes: webelement.WebElement, target_class: TargetClass)
         booking_column = 1
     previous_time = datetime.datetime.strptime('00:00', '%H:%M').time()
 
+    logging.info(f'starting at booking column {booking_column}')
+
     for class_div in gym_classes:
         gym_class = class_div.text.splitlines()
         if len(gym_class) == 4:
