@@ -14,7 +14,6 @@ api = Api(app,
 ns = api.namespace('api', description='Gym Class Booking')
 
 gym_class = api.model('gym_class', {
-    'draft': fields.Boolean(default=False, description='Draft mode - search only if true, search and book if false'),
     'headless': fields.Boolean(default=False, description='Run Chrome in headless mode'),
     'user': fields.String(required=True, description='Run Chrome in headless mode'),
     'class_name': fields.String(required=True, description='Target gym class to book'),
