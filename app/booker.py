@@ -3,7 +3,6 @@
 from urllib import parse
 import logging
 import datetime
-from selenium.webdriver.remote import webelement
 from app import website_utils, gym_class_parser
 
 
