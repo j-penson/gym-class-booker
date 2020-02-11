@@ -28,4 +28,4 @@ jobs:
       # Deploy the Docker image to Cloud Run
       - name: Deploy
         run: |
-          gcloud components install core && gcloud run deploy gym-booker --quiet --image gcr.io/gym-booker/gym --project gym-booker --region europe-west1 --platform managed --memory 1Gi
+          gcloud components install beta && gcloud beta run deploy gym-booker --quiet --image gcr.io/gym-booker/gym --project gym-booker --region europe-west1 --platform managed --memory 1Gi

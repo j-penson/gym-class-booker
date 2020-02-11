@@ -104,11 +104,11 @@ gcloud iam service-accounts create gym-booker-scheduler \
 
 SERVICE_URL=https://gym-booker-5exxbtdepa-ew.a.run.app/api/book
 
-gcloud beta scheduler jobs create http hatha-lunch --schedule "00 12 7 * *" \
+gcloud beta scheduler jobs create http vinyasa-thurs-tea --schedule "0 0 12 ? * TUE *" \
    --http-method=POST \
    --uri="${SERVICE_URL}" \
    --oidc-service-account-email=gym-scheduler@gym-booker.iam.gserviceaccount.com   \
    --oidc-token-audience="${SERVICE_URL}" \
-   --message-body-from-file="./secrets/test-class.json" \
+   --message-body-from-file="./classes/vinyasa-class-thurs.json" \
    --headers="Content-Type=application/json"
 ```
