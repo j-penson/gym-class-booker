@@ -25,7 +25,7 @@ def test_get_booking_column_invalid(class_date):
 
 @pytest.mark.parametrize("class_date, expected", [(2, 3),
                                                   (1, 2),
-                                                  (0.1, 1)])
+                                                  (0.001, 1)])
 def test_get_booking_column_valid(class_date, expected):
     """Checking bookings in the valid range return the column number"""
     class_date = datetime.datetime.now() + datetime.timedelta(days=class_date)
