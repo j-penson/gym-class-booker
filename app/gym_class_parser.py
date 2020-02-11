@@ -22,15 +22,16 @@ class TargetClass:
         self.target_booking_start_time = self.target_class_datetime.time()
 
 
-def get_gym_class(gym_timetable: webelement.WebElement, target_class: TargetClass):
+def get_gym_class(gym_classes: webelement.WebElement, target_class: TargetClass):
     """For each gym class in the timetable, parse and check if it matched the """
-    booking_column = 1
+    # Classes end at 2030 so if the program is being run after that, start the column at 2
+    if datetime.datetime.now().time() > datetime.datetime.strptime('20:30', '%H:%M').time():
+        booking_column = 2
+    else:
+        booking_column = 1
     previous_time = datetime.datetime.strptime('00:00', '%H:%M').time()
 
-    classes = gym_timetable.find_elements_by_css_selector('div[class="fkl-cal-td fkl-class"]')
-    logging.info(f'got {len(classes)} classes')
-
-    for class_div in classes:
+    for class_div in gym_classes:
         gym_class = class_div.text.splitlines()
         if len(gym_class) == 4:
             gym_class_tuple = parse_class(gym_class)
@@ -54,6 +55,13 @@ def get_gym_class(gym_timetable: webelement.WebElement, target_class: TargetClas
 
     # If we go through everything and don't find a match raise an exception
     raise ClassNotFound
+
+
+def get_classes(gym_timetable: webelement.WebElement):
+    """Get all classes for a week"""
+    classes = gym_timetable.find_elements_by_css_selector('div[class="fkl-cal-td fkl-class"]')
+    logging.info(f'got {len(classes)} classes')
+    return classes
 
 
 def parse_class(gym_class):

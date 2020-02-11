@@ -17,23 +17,22 @@ class GymBooker(Resource):
 
         headless = self.api.payload['headless']
         user = self.api.payload['user']
-        draft = self.api.payload['draft']
 
         setup = driver.GymDriver(headless=headless)
         setup.setup(secret_id=user)
 
-        if draft:
-            booking_message = 'Draft mode'
+        nav = booker.GymBooker(setup)
 
-        else:
-            nav = booker.GymBooker(setup)
-            nav.login()
+        # Login to gym website with user credentials
+        nav.login()
 
-            target_class = gym_class_parser.TargetClass(target_class_name=self.api.payload['class_name'],
-                                                        target_class_datetime=self.api.payload['class_datetime'])
+        # Get the class timetable for the week
+        nav.get_classes()
 
-            nav.find_class(target_class)
-            booking_message = nav.book_class()
+        # Set the target class and book it
+        target_class = gym_class_parser.TargetClass(target_class_name=self.api.payload['class_name'],
+                                                    target_class_datetime=self.api.payload['class_datetime'])
+        booking_message = nav.book_class(target_class)
 
         logging.info(booking_message)
 

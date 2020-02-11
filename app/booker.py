@@ -28,6 +28,8 @@ class GymBooker:
         self.email = driver.email
         self.password = driver.password
         self.base_url = driver.base_url
+        self.timetable = None
+        self.gym_classes = None
         self.target_class = None
 
     def login(self):
@@ -47,23 +49,24 @@ class GymBooker:
 
         logging.info('successfully logged in')
 
-    def find_class(self, target_class: gym_class_parser.TargetClass):
-        self.target_class = target_class
-
+    def get_classes(self):
         # Get timetable page and wait for load
         class_url = self._get_url('timetable')
         self.driver.get(class_url)
         website_utils.sleep()
 
         # Get whole timetable and specific class
-        gym_timetable = self.driver.find_element_by_xpath('/html/body/main/div[5]/div/div[2]/div[1]/*')
+        self.timetable = self.driver.find_element_by_xpath('/html/body/main/div[5]/div/div[2]/div[1]/*')
+        self.gym_classes = gym_class_parser.get_classes(self.timetable)
 
-        gym_class_parser.get_gym_class(gym_timetable, target_class) \
+    def book_class(self, target_class: gym_class_parser.TargetClass) -> list:
+        """Book the selected class and return the message"""
+        self.target_class = target_class
+
+        gym_class_parser.get_gym_class(self.gym_classes, target_class) \
             .click()
         website_utils.sleep(1)
 
-    def book_class(self) -> list:
-        """Book the selected class and return the message"""
         try:
             book_div = self.driver.find_element_by_css_selector('div[class="fkl-modal-inner"] input[value="Book"]')
         except Exception as e:
