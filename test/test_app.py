@@ -8,5 +8,7 @@
 """
 
 
-def test_parse_class():
-    pass
+def test_index(client):
+    """Check the index page loads."""
+    response = client.get('/')
+    assert response.status_code == 200

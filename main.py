@@ -1,59 +1,45 @@
 #!/usr/bin/python
 # coding=utf-8
-import datetime
+from flask_restx import Resource
 import logging
-import sys
-from flask import Flask
-from flask_restx import Api, Resource
-
-from app import driver, booker, gym_class_parser
-
-app = Flask(__name__)
-api = Api(app, version='1.0', title='Gym Booker API',
-          description='An API to log on to the gym website and book classes',
-          )
-
-# Setup logging
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.INFO)
-logger.addHandler(handler)
+from app import driver, booker, gym_class_parser, api
 
 
-@api.route('/book')
-class TodoSimple(Resource):
-    """
-    You can try this example as follow:
-        $ curl http://localhost:5000/todo1 -d "data=Remember the milk" -X PUT
-        $ curl http://localhost:5000/todo1
-        {"todo1": "Remember the milk"}
-        $ curl http://localhost:5000/todo2 -d "data=Change my breakpads" -X PUT
-        $ curl http://localhost:5000/todo2
-        {"todo2": "Change my breakpads"}
-    """
+@api.ns.route('/book')
+class GymBooker(Resource):
 
-    def get(self):
-        setup = driver.GymDriver(headless=True)
-        setup.setup(secret_id='jp')  # nosec
+    @api.ns.doc('gym_class')
+    @api.ns.expect(api.gym_class)
+    @api.ns.marshal_with(api.gym_class, code=201)
+    def post(self):
 
-        draft = True
+        logging.info(f'payload is {self.api.payload}')
 
-        if not draft:
-            nav = booker.GymBooker(setup)
-            nav.login()
+        headless = self.api.payload['headless']
+        user = self.api.payload['user']
 
-            target_class = gym_class_parser.TargetClass(target_class_name='HOT VINYASA YOGA',
-                                                        target_class_datetime=datetime.datetime(2020, 2, 7, 19, 15))
+        setup = driver.GymDriver(headless=headless)
+        setup.setup(secret_id=user)
 
-            nav.find_class(target_class)
-            booking_message = nav.book_class()
-        else:
-            booking_message = 'Draft mode'
+        nav = booker.GymBooker(setup)
+
+        # Login to gym website with user credentials
+        nav.login()
+
+        # Get the class timetable for the week
+        nav.get_classes()
+
+        # Set the target class and book it
+        target_class = gym_class_parser.TargetClass(target_class_name=self.api.payload['class_name'],
+                                                    target_class_datetime=self.api.payload['class_datetime'])
+        booking_message = nav.book_class(target_class)
+
+        logging.info(booking_message)
 
         return booking_message
 
 
-if __name__ == '__main__':
+app = api.create_app()
+
+if __name__ == "__main__":
     app.run()

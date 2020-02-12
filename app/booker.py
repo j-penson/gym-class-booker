@@ -3,7 +3,7 @@
 from urllib import parse
 import logging
 import datetime
-from app import website_navigation, gym_class_parser
+from app import website_utils, gym_class_parser
 
 
 class BookingError(Exception):
@@ -28,6 +28,8 @@ class GymBooker:
         self.email = driver.email
         self.password = driver.password
         self.base_url = driver.base_url
+        self.timetable = None
+        self.gym_classes = None
         self.target_class = None
 
     def login(self):
@@ -39,33 +41,40 @@ class GymBooker:
         self.driver.find_element_by_name('password').send_keys(self.password)
         self.driver.find_element_by_css_selector('input[type="submit"]').click()
 
-        website_navigation.sleep()
+        website_utils.sleep()
 
-        if not compare_url_paths(self.driver.current_url, target_url):
+        if not website_utils.compare_url_paths(self.driver.current_url, target_url):
             logging.error(f'{self.driver.current_url} when expecting {target_url}')
             raise LoginError
 
-        logging.info('Successfully logged in')
+        logging.info('successfully logged in')
 
-    def find_class(self, target_class):
-        self.target_class = target_class
-
+    def get_classes(self):
         # Get timetable page and wait for load
         class_url = self._get_url('timetable')
         self.driver.get(class_url)
-        website_navigation.sleep()
+        website_utils.sleep()
 
         # Get whole timetable and specific class
-        gym_timetable = self.driver.find_element_by_xpath('/html/body/main/div[5]/div/div[2]/div[1]/*')
+        self.timetable = self.driver.find_element_by_xpath('/html/body/main/div[5]/div/div[2]/div[1]/*')
+        self.gym_classes = gym_class_parser.get_classes(self.timetable)
 
-        gym_class_parser.get_gym_class(gym_timetable, target_class) \
-            .click()
-        website_navigation.sleep(1)
-
-    def book_class(self):
+    def book_class(self, target_class: gym_class_parser.TargetClass) -> list:
         """Book the selected class and return the message"""
-        book_div = self.driver.find_element_by_css_selector('div[class="fkl-modal-inner"] input[value="Book"]')
-        website_navigation.sleep(1)
+        self.target_class = target_class
+
+        gym_class_parser.get_gym_class(self.gym_classes, target_class) \
+            .click()
+        website_utils.sleep(1)
+
+        try:
+            book_div = self.driver.find_element_by_css_selector('div[class="fkl-modal-inner"] input[value="Book"]')
+        except Exception as e:
+            logging.warning(f'Book option not found so looking for Join Waiting List - error {e}')
+            book_div = self.driver.find_element_by_css_selector(
+                'div[class="fkl-modal-inner"] input[value = "Join Waiting List"]')
+
+        website_utils.sleep(1)
         book_div.click()
 
         booking_message_div = self.driver.find_element_by_css_selector('div[class="fkl-modal-inner"]')
@@ -75,32 +84,21 @@ class GymBooker:
         return parse.urljoin(self.base_url, url, '/')
 
 
-def compare_url_paths(actual, expected):
-    def get_path(url):
-        url = parse.urlparse(url)
-        return url.path.replace('/', '')
-
-    actual_path = get_path(actual)
-    expected_path = get_path(expected)
-
-    return True if actual_path == expected_path else False
-
-
-def get_booking_column(class_datetime):
+def get_booking_column(class_datetime: datetime.datetime) -> int:
     """Get the column on the timetable page"""
     booking_datetime = class_datetime - datetime.timedelta(days=2)
     now_datetime = datetime.datetime.now()
 
-    if now_datetime <= booking_datetime:
-        booking_datetime = datetime.datetime.now()
+    logging.info(f'bookings: {booking_datetime}, now: {now_datetime}, class: {class_datetime}')
 
     if now_datetime >= class_datetime:
         logging.error(f'booking_datetime {booking_datetime} after current datetime, class passed')
         raise TimingError
-    elif booking_datetime >= now_datetime:
-        logging.error(f'booking_datetime {booking_datetime} after now, class too early')
-        raise TimingError
+    elif now_datetime >= booking_datetime:
+        booking_column = 1 + (class_datetime.day - now_datetime.day)
     else:
         booking_column = 3 + (booking_datetime.day - now_datetime.day)
+
+    logging.info(f'booking column is {booking_column}')
 
     return booking_column
