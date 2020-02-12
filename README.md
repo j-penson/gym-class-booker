@@ -30,11 +30,8 @@ Local:
 export GOOGLE_APPLICATION_CREDENTIALS=./secrets/gym-booker-72a4fa622a1e.json
 python main.py
 gunicorn -b 0.0.0.0:8080 main:app
-
-
 ```
 
-cd
 Container:
 ```
 docker build -t gym:latest .
@@ -44,12 +41,25 @@ docker run -it \
            -v /Users/jamespenson/Documents/python/gym-class-booker/secrets:/secrets \
            -e GOOGLE_APPLICATION_CREDENTIALS=/secrets/gym-booker-72a4fa622a1e.json \
     gym:latest
+
+curl -X POST \
+     -H "Content-Type: application/json" \
+     -d @secrets/test-class.json \
+     localhost:8080/api/book
 ```
 
-### Cloud Run
-Deploy commands
+### Cloud Build and Run
+Create a service account with the roles:
+- `Cloud Build Service Account`
+- `Service Account User`
+- `Cloud Run Admin`
+- `Storage Viewer`
+
+Create a bucket to deploy the logs to (the default bucket requires project owner access...)
+
+Deploy commands:
 ```
-gcloud builds submit --tag gcr.io/gym-booker/gym
+gcloud builds submit --tag gcr.io/gym-booker/gym --gcs-log-dir=gs://gym-booker-build-logs/logs
 
 gcloud run deploy gym-booker --image gcr.io/gym-booker/gym \
                              --project gym-booker \
@@ -75,6 +85,30 @@ gcloud run services add-iam-policy-binding gym-booker \
 # Add an alias for curl with auth
 gcurl='curl --header "Authorization: Bearer $(gcloud auth print-identity-token)"'
 
-gcurl gym-booker
+gcurl -X POST \
+      -H "Content-Type: application/json" \
+      -d @secrets/test-class.json \
+      $(gcloud run services list --platform managed | cut -d" " -f7)"/api/book"
+```
 
+Give Cloud Run access to secrets by adding `Secret Manager Accessor` to the compute service account.
+
+
+### Cloud Scheduler
+
+
+```
+Create a service account
+gcloud iam service-accounts create gym-booker-scheduler \
+   --display-name "DISPLAYED-SERVICE-ACCOUNT_NAME
+
+SERVICE_URL=https://gym-booker-5exxbtdepa-ew.a.run.app/api/book
+
+gcloud beta scheduler jobs create http vinyasa-thurs-tea --schedule "0 0 12 ? * TUE *" \
+   --http-method=POST \
+   --uri="${SERVICE_URL}" \
+   --oidc-service-account-email=gym-scheduler@gym-booker.iam.gserviceaccount.com   \
+   --oidc-token-audience="${SERVICE_URL}" \
+   --message-body-from-file="./classes/vinyasa-class-thurs.json" \
+   --headers="Content-Type=application/json"
 ```
