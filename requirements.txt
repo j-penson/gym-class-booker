@@ -9,7 +9,7 @@ Click==7.0
 entrypoints==0.3
 flake8==3.7.9
 Flask==1.1.1
-flask-restx==0.1.0
+flask-restx==0.5.1
 gitdb2==2.0.6
 GitPython==3.0.5
 google-api-core==1.16.0
